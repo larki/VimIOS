@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4636C3441C83C6BC005E15A7 /* readme.md in Sources */ = {isa = PBXBuildFile; fileRef = 4636C3431C83C6BC005E15A7 /* readme.md */; };
 		464ADAD11BE1BC0700CD4D57 /* CString.swift in Sources */ = {isa = PBXBuildFile; fileRef = 464ADAD01BE1BC0700CD4D57 /* CString.swift */; };
 		465D8D451BEA8FC0002E557C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 46BEBEF01BE0634800DF78C8 /* Assets.xcassets */; };
 		465D8D471BEA93FE002E557C /* Icon-60@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 465D8D461BEA93FE002E557C /* Icon-60@3x.png */; };
@@ -103,6 +102,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		37C4B8681DDCDDDE00A34E8F /* VimIOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VimIOS.entitlements; sourceTree = "<group>"; };
 		4636C3431C83C6BC005E15A7 /* readme.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = readme.md; sourceTree = "<group>"; };
 		464ADAD01BE1BC0700CD4D57 /* CString.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CString.swift; sourceTree = "<group>"; };
 		465D8D461BEA93FE002E557C /* Icon-60@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon-60@3x.png"; sourceTree = "<group>"; };
@@ -2838,6 +2838,7 @@
 		46BEBEE81BE0634800DF78C8 /* VimIOS */ = {
 			isa = PBXGroup;
 			children = (
+				37C4B8681DDCDDDE00A34E8F /* VimIOS.entitlements */,
 				46BC37611BE58A8A00F2784D /* resources */,
 				46BEE89A1BE066A000DF78C8 /* VimIOS-Bridging-Header.h */,
 				46BEE89F1BE0735600DF78C8 /* ios_prefix.h */,
@@ -6463,21 +6464,29 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0710;
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0810;
 				ORGANIZATIONNAME = "Lars Kindler";
 				TargetAttributes = {
 					46BEBEE51BE0634800DF78C8 = {
 						CreatedOnToolsVersion = 7.1;
 						DevelopmentTeam = WB97F4TN5Z;
+						LastSwiftMigration = 0810;
+						SystemCapabilities = {
+							com.apple.iCloud = {
+								enabled = 1;
+							};
+						};
 					};
 					46BEBEF91BE0634800DF78C8 = {
 						CreatedOnToolsVersion = 7.1;
 						DevelopmentTeam = WB97F4TN5Z;
+						LastSwiftMigration = 0810;
 						TestTargetID = 46BEBEE51BE0634800DF78C8;
 					};
 					46BEBF041BE0634800DF78C8 = {
 						CreatedOnToolsVersion = 7.1;
 						DevelopmentTeam = WB97F4TN5Z;
+						LastSwiftMigration = 0810;
 						TestTargetID = 46BEBEE51BE0634800DF78C8;
 					};
 				};
@@ -6591,7 +6600,6 @@
 				46BEE5E71BE0642600DF78C8 /* eval.c in Sources */,
 				46BEE5F21BE0642600DF78C8 /* gui.c in Sources */,
 				46BEE6541BE0642600DF78C8 /* netbeans.c in Sources */,
-				4636C3441C83C6BC005E15A7 /* readme.md in Sources */,
 				46BEE8A81BE087BD00DF78C8 /* termlib.c in Sources */,
 				46BEE6FD1BE0642600DF78C8 /* spell.c in Sources */,
 				46BEE6461BE0642600DF78C8 /* memfile.c in Sources */,
@@ -6668,8 +6676,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -6698,6 +6708,7 @@
 				SDKROOT = iphoneos;
 				"SWIFT_OBJC_BRIDGING_HEADER[arch=*]" = "VimIOS/VimIOS-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0.1;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -6715,8 +6726,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -6740,7 +6753,8 @@
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "VimIOS/VimIOS-Bridging-Header.h";
 				"SWIFT_OBJC_BRIDGING_HEADER[arch=*]" = "VimIOS/VimIOS-Bridging-Header.h";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 3.0.1;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
@@ -6751,6 +6765,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = VimIOS/VimIOS.entitlements;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_PREFIX_HEADER = "${SRCROOT}/VimIOS/ios_prefix.h";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
@@ -6768,7 +6783,6 @@
 				SWIFT_DISABLE_SAFETY_CHECKS = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "VimIOS/VimIOS-Bridging-Header.h";
 				"SWIFT_OBJC_BRIDGING_HEADER[arch=*]" = "VimIOS/VimIOS-Bridging-Header.h";
-				SWIFT_VERSION = 2.3;
 				USER_HEADER_SEARCH_PATHS = "/Users/Lars/vimIOS/VimIOS/**";
 			};
 			name = Debug;
@@ -6778,6 +6792,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+                CODE_SIGN_ENTITLEMENTS = VimIOS/VimIOS.entitlements;
 				GCC_PREFIX_HEADER = "${SRCROOT}/VimIOS/ios_prefix.h";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/**";
@@ -6794,7 +6809,6 @@
 				SWIFT_DISABLE_SAFETY_CHECKS = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
 				"SWIFT_OBJC_BRIDGING_HEADER[arch=*]" = "VimIOS/VimIOS-Bridging-Header.h";
-				SWIFT_VERSION = 2.3;
 				USER_HEADER_SEARCH_PATHS = "/Users/Lars/vimIOS/VimIOS/**";
 			};
 			name = Release;

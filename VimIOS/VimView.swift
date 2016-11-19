@@ -18,49 +18,49 @@ struct FontProperties{
 }
 
 class VimView: UIView {
-    var dirtyRect = CGRectZero
-    var shellLayer : CGLayerRef?
+    var dirtyRect = CGRect.zero
+    var shellLayer : CGLayer?
     var shellSize = 1366
     
     var char_ascent=CGFloat(0)
     var char_width=CGFloat(0)
     var char_height=CGFloat(0)
     
-    var bgcolor:CGColorRef?
-    var fgcolor:CGColorRef?
-    var spcolor:CGColorRef?
+    var bgcolor:CGColor?
+    var fgcolor:CGColor?
+    var spcolor:CGColor?
     
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        shellSize = max(Int(UIScreen.mainScreen().bounds.width), Int(UIScreen.mainScreen().bounds.height))
+        shellSize = max(Int(UIScreen.main.bounds.width), Int(UIScreen.main.bounds.height))
         
     }
     required init?(coder aDecoder: NSCoder) {
         super.init(coder:aDecoder)
     }
-    override func drawRect(rect: CGRect) {
+    override func draw(_ rect: CGRect) {
         guard let layer = shellLayer else {
-            let scale = UIScreen.mainScreen().scale
+            let scale = UIScreen.main.scale
             
-            shellLayer = CGLayerCreateWithContext(UIGraphicsGetCurrentContext()!, CGSizeMake(CGFloat(shellSize)*scale, CGFloat(shellSize)*scale), nil)
-            let layerContext = CGLayerGetContext(shellLayer!)
+            shellLayer = CGLayer(UIGraphicsGetCurrentContext()!, size: CGSize(width: CGFloat(shellSize)*scale, height: CGFloat(shellSize)*scale), auxiliaryInfo: nil)
+            let layerContext = shellLayer!.context
             
-            CGContextScaleCTM(layerContext!, scale,scale)
+            layerContext!.scaleBy(x: scale,y: scale)
             return
         }
         //print("DrawRect \(rect)")
         
-        if( !CGRectEqualToRect(rect, CGRectZero)) {
+        if( !rect.equalTo(CGRect.zero)) {
             let context = UIGraphicsGetCurrentContext()
-            CGContextSaveGState(context!)
-            CGContextBeginPath(context!)
-            CGContextAddRect(context!, rect)
-            CGContextClip(context!)
-            let bounds = CGRectMake(0,0,CGFloat(shellSize),CGFloat(shellSize))
-            CGContextDrawLayerInRect(context!, bounds, layer)
-            CGContextRestoreGState(context!)
-            dirtyRect=CGRectZero
+            context!.saveGState()
+            context!.beginPath()
+            context!.addRect(rect)
+            context!.clip()
+            let bounds = CGRect(x: 0,y: 0,width: CGFloat(shellSize),height: CGFloat(shellSize))
+            context!.draw(layer, in: bounds)
+            context!.restoreGState()
+            dirtyRect=CGRect.zero
         }
     }
     
@@ -76,36 +76,36 @@ class VimView: UIView {
     
     
     
-    func CGLayerCopyRectToRect(layer: CGLayerRef? , sourceRect: CGRect , targetRect: CGRect) {
+    func CGLayerCopyRectToRect(_ layer: CGLayer? , sourceRect: CGRect , targetRect: CGRect) {
         guard let layer = layer else {return}
         
-        let context = CGLayerGetContext(layer)
+        let context = layer.context
         
         var destinationRect = targetRect
         destinationRect.size.width = min(targetRect.size.width, sourceRect.size.width)
         destinationRect.size.height = min(targetRect.size.height, sourceRect.size.height)
         
-        CGContextSaveGState(context!)
+        context!.saveGState()
         
-        CGContextBeginPath(context!)
-        CGContextAddRect(context!, destinationRect)
-        CGContextClip(context!)
-        let size = CGLayerGetSize(layer)
+        context!.beginPath()
+        context!.addRect(destinationRect)
+        context!.clip()
+        let size = layer.size
         
-        CGContextDrawLayerInRect(context!, CGRectMake(destinationRect.origin.x - sourceRect.origin.x, destinationRect.origin.y - sourceRect.origin.y, size.width/2, size.height/2),layer);
+        context!.draw(layer, in: CGRect(x: destinationRect.origin.x - sourceRect.origin.x, y: destinationRect.origin.y - sourceRect.origin.y, width: size.width/2, height: size.height/2))
         //    CGContextDrawLayerAtPoint(context, CGPointMake(destinationRect.origin.x - sourceRect.origin.x, destinationRect.origin.y - sourceRect.origin.y), layer);
         
         
-        dirtyRect = CGRectUnion(dirtyRect, destinationRect)
-        CGContextRestoreGState(context!)
+        dirtyRect = dirtyRect.union(destinationRect)
+        context!.restoreGState()
     }
-    func CGLayerCopyRectToRect(sourceRect: CGRect , targetRect: CGRect) {
+    func CGLayerCopyRectToRect(_ sourceRect: CGRect , targetRect: CGRect) {
         CGLayerCopyRectToRect(shellLayer, sourceRect: sourceRect, targetRect: targetRect)
     }
 
     func flush(){
-        CGContextFlush(CGLayerGetContext(shellLayer!)!)
-        self.setNeedsDisplayInRect(dirtyRect)
+        shellLayer!.context!.flush()
+        self.setNeedsDisplay(dirtyRect)
 //        if(dirtyRect.height>1) {
 //                print(dirtyRect)
 //        }
@@ -115,28 +115,28 @@ class VimView: UIView {
     
     func clearAll() {
         if let layer = shellLayer {
-        let  size = CGLayerGetSize(layer)
+        let  size = layer.size
         
-        fillRectWithColor(CGRectMake(0,0,size.width,size.height), color: bgcolor ?? UIColor.blackColor().CGColor)
+        fillRectWithColor(CGRect(x: 0,y: 0,width: size.width,height: size.height), color: bgcolor ?? UIColor.black.cgColor)
         dirtyRect=self.bounds
    //         print("ClearALL \(CGColorGetComponents(bgcolor)), \(size.width), \(size.height), \(self.bounds)")
-        self.setNeedsDisplayInRect(dirtyRect)
+        self.setNeedsDisplay(dirtyRect)
         }
     }
     
-    func fillRectWithColor(rect: CGRect, color: CGColorRef?) {
+    func fillRectWithColor(_ rect: CGRect, color: CGColor?) {
             //print("In fillRectWithColor \(rect), \(color)")
         if let layer = shellLayer, let color = color {
-            let context = CGLayerGetContext(layer)
-            CGContextSetFillColorWithColor(context!, color)
-            CGContextFillRect(context!, rect)
-            dirtyRect = CGRectUnion(dirtyRect, rect)
-            self.setNeedsDisplayInRect(dirtyRect)
+            let context = layer.context
+            context!.setFillColor(color)
+            context!.fill(rect)
+            dirtyRect = dirtyRect.union(rect)
+            self.setNeedsDisplay(dirtyRect)
             }
     }
     
-    func drawString(s:NSAttributedString,
-        font: CTFontRef,
+    func drawString(_ s:NSAttributedString,
+        font: CTFont,
         pos_x:CGFloat,
         pos_y: CGFloat,
         rect:CGRect,
@@ -144,22 +144,22 @@ class VimView: UIView {
         transparent: Bool,
         cursor: Bool) {
             
-            guard let context = CGLayerGetContext(shellLayer!) else{ return}
-            CGContextSetShouldAntialias(context, p_antialias);
-            CGContextSetAllowsAntialiasing(context, p_antialias);
-            CGContextSetShouldSmoothFonts(context, p_antialias);
+            guard let context = shellLayer!.context else{ return}
+            context.setShouldAntialias(p_antialias);
+            context.setAllowsAntialiasing(p_antialias);
+            context.setShouldSmoothFonts(p_antialias);
             
-            CGContextSetCharacterSpacing(context, 0);
-            CGContextSetTextDrawingMode(context, .Fill)
+            context.setCharacterSpacing(0);
+            context.setTextDrawingMode(.fill)
             
             
             if(transparent) {
-                CGContextSetFillColorWithColor(context, bgcolor!)
-                CGContextFillRect(context, rect)
+                context.setFillColor(bgcolor!)
+                context.fill(rect)
             }
             
             
-            CGContextSetFillColorWithColor(context, fgcolor!);
+            context.setFillColor(fgcolor!);
 //            let attributes : [String:AnyObject] = ([NSFontAttributeName:font, (kCTForegroundColorFromContextAttributeName as String):true])
 //            
 //            let attributesNeu = NSDictionary(dictionaryLiteral: (NSFontAttributeName, font) (kCTForegroundColorFromContextAttributeName, true))
@@ -168,34 +168,34 @@ class VimView: UIView {
             
             
             let line = CTLineCreateWithAttributedString(s)
-            CGContextSetTextPosition(context, pos_x, pos_y)
+            context.textPosition = CGPoint(x: pos_x, y: pos_y)
             CTLineDraw(line, context)
             
             if(cursor) {
-                CGContextSaveGState(context);
-                CGContextSetBlendMode(context, .Difference)
-                CGContextFillRect(context, rect)
-                CGContextRestoreGState(context)
+                context.saveGState();
+                context.setBlendMode(.difference)
+                context.fill(rect)
+                context.restoreGState()
             }
             
             
             
             
-            dirtyRect = CGRectUnion(dirtyRect, rect);
+            dirtyRect = dirtyRect.union(rect);
           //  print("Draw String \(s) at \(pos_x), \(pos_y) and \(dirtyRect)")
             
     }
     
-    func initFont() -> CTFontRef {
-        let rawFont = CTFontCreateWithName(font.name as CFStringRef, font.size, nil)
+    func initFont() -> CTFont {
+        let rawFont = CTFontCreateWithName(font.name as CFString, font.size, nil)
         
-        var boundingRect = CGRectZero;
-        var glyph = CTFontGetGlyphWithName(rawFont, "0" as CFStringRef)
+        var boundingRect = CGRect.zero;
+        var glyph = CTFontGetGlyphWithName(rawFont, "0" as CFString)
        
-        let glyphPointer = withUnsafePointer(&glyph) {(pointer: UnsafePointer<CGGlyph>) -> UnsafePointer<CGGlyph> in return pointer}
+        let glyphPointer = withUnsafePointer(to: &glyph) {(pointer: UnsafePointer<CGGlyph>) -> UnsafePointer<CGGlyph> in return pointer}
         
-        withUnsafeMutablePointer(&boundingRect) { (pointer:UnsafeMutablePointer<CGRect>) in
-        CTFontGetBoundingRectsForGlyphs(rawFont, .Horizontal, glyphPointer, pointer, 1)
+        withUnsafeMutablePointer(to: &boundingRect) { (pointer:UnsafeMutablePointer<CGRect>) in
+        CTFontGetBoundingRectsForGlyphs(rawFont, .horizontal, glyphPointer, pointer, 1)
         }
         
         
@@ -204,13 +204,13 @@ class VimView: UIView {
         char_height = boundingRect.height+3
 
 
-        var advances = CGSizeZero
-        withUnsafeMutablePointer(&advances, {(pointer: UnsafeMutablePointer<CGSize>) in
-            CTFontGetAdvancesForGlyphs(rawFont, .Horizontal, glyphPointer, pointer, 1)});
+        var advances = CGSize.zero
+        withUnsafeMutablePointer(to: &advances, {(pointer: UnsafeMutablePointer<CGSize>) in
+            CTFontGetAdvancesForGlyphs(rawFont, .horizontal, glyphPointer, pointer, 1)});
         
-        var transform = CGAffineTransformMakeScale(boundingRect.width/advances.width, -1)
+        var transform = CGAffineTransform(scaleX: boundingRect.width/advances.width, y: -1)
         
-        return withUnsafePointer(&transform, {
+        return withUnsafePointer(to: &transform, {
             (t:UnsafePointer<CGAffineTransform>) -> CTFont in
             return CTFontCreateCopyWithAttributes(rawFont, font.size,t , nil)})
     

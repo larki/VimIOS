@@ -15,21 +15,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     
-    func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject : AnyObject]?) -> Bool {
-        var url: NSURL?
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+        var url: URL?
         
-        url = launchOptions?[UIApplicationLaunchOptionsURLKey] as? NSURL
+        url = launchOptions?[UIApplicationLaunchOptionsKey.url] as? URL
         
         
         //Start Vim!
-        performSelectorOnMainThread("VimStarter:", withObject: url, waitUntilDone: false)
+        performSelector(onMainThread: #selector(AppDelegate.VimStarter(_:)), with: url, waitUntilDone: false)
         return true
         
     }
     
-    func application(app: UIApplication, openURL url: NSURL, options: [String : AnyObject]) -> Bool {
-        if(url.fileURL) {
-            let file = "Inbox/"+url.lastPathComponent!
+    func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey : Any]) -> Bool {
+        if(url.isFileURL) {
+            let file = "Inbox/"+url.lastPathComponent
             do_cmdline_cmd("tabedit \(file)".char)
             do_cmdline_cmd("redraw!".char)
             return true
@@ -38,8 +38,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     
-    func VimStarter(url: NSURL?) {
-        guard let vimPath = NSBundle.mainBundle().resourcePath else {return}
+    func VimStarter(_ url: URL?) {
+        guard let vimPath = Bundle.main.resourcePath else {return}
         let runtimePath = vimPath + "/runtime"
         vim_setenv("VIM".char, vimPath.char)
         vim_setenv("VIMRUNTIME".char, runtimePath.char)
@@ -48,20 +48,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         
         
-        let workingDir = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0]
+        let workingDir = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
         //print("WorkingDir: \(workingDir)")
         
         vim_setenv("HOME".char, workingDir.char)
-        NSFileManager.defaultManager().changeCurrentDirectoryPath(workingDir)
+        FileManager.default.changeCurrentDirectoryPath(workingDir)
         
         var numberOfArguments = 0
         var file: String?
 
-        if let url = url where url.fileURL {
-            if let filename=url.lastPathComponent {
-                file = "Inbox/"+filename
-                numberOfArguments++
-            }
+        if let url = url, url.isFileURL {
+            let filename = url.lastPathComponent
+            file = "Inbox/" + filename
+            numberOfArguments += 1
         }
         
         vimHelper(Int32(numberOfArguments),file)
@@ -73,11 +72,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
 extension String {
-    var char: UnsafeMutablePointer<char_u> {
-        return UnsafeMutablePointer<char_u>((self as NSString).UTF8String)
+    // In Swift 3 compiler automatically translates String to "const char *"
+    var char: String {
+        return self
     }
     
-    func each(closure: (String) -> Void ) {
+    func each(_ closure: (String) -> Void ) {
         for digit in self.characters
         {
             closure(String(digit))
