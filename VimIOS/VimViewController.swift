@@ -20,6 +20,65 @@ enum blink_state {
 let hotkeys = "1234567890!@#$%^&*()_={}\\/.,<>?:|`~[]"
 let shiftableHotkeys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
+let kMenuCommandModifiers = 0
+let kMenuShiftModifier  = (1 << 0)
+let kMenuOptionModifier = (1 << 1)
+let kMenuControlModifier = (1 << 2)
+let kMenuNoCommandModifier = (1 << 3)
+let MOD_MASK_SHIFT : UInt8 = 0x02
+let MOD_MASK_CTRL : UInt8 = 0x04
+let MOD_MASK_ALT :UInt8 = 0x08
+let KS_MODIFIER : UInt8 = 252
+let CSI : UInt8 = 0x9b	/* Control Sequence Introducer */
+
+let vk_Return   :CChar = 0x28
+let vk_Esc      :CChar = 0x29
+let vk_Delete   :CChar = 0x30
+let vk_Tab      :CChar = 0x31
+let vk_F1       :CChar = 0x3a
+let vk_F2       :CChar = 0x3b
+let vk_F3       :CChar = 0x3c
+let vk_F4       :CChar = 0x3d
+let vk_F5       :CChar = 0x3e
+let vk_F6       :CChar = 0x3f
+let vk_F7       :CChar = 0x40
+let vk_F8       :CChar = 0x41
+let vk_F9       :CChar = 0x42
+let vk_F10      :CChar = 0x43
+let vk_F11      :CChar = 0x44
+let vk_F12      :CChar = 0x45
+let vk_F13      :CChar = 0x46
+let vk_F14      :CChar = 0x47
+let vk_F15      :CChar = 0x48
+let vk_Right    :CChar = 0x4F
+let vk_Left     :CChar = 0x50
+let vk_Down     :CChar = 0x51
+let vk_Up       :CChar = 0x52
+let special_keys: [[CChar]] = [
+        [vk_Up,  "k".utf8CString[0], "u".utf8CString[0]],
+        [vk_Down,"k".utf8CString[0], "d".utf8CString[0]],
+        [vk_Left,"k".utf8CString[0], "l".utf8CString[0]],
+        [vk_Right, "k".utf8CString[0], "r".utf8CString[0]],
+        [vk_Delete,"k".utf8CString[0], "b".utf8CString[0]],
+        [vk_F1,    "k".utf8CString[0], "1".utf8CString[0]],
+        [vk_F2,    "k".utf8CString[0], "2".utf8CString[0]],
+        [vk_F3,    "k".utf8CString[0], "3".utf8CString[0]],
+        [vk_F4,    "k".utf8CString[0], "4".utf8CString[0]],
+        [vk_F5,    "k".utf8CString[0], "5".utf8CString[0]],
+        [vk_F6,    "k".utf8CString[0], "6".utf8CString[0]],
+        [vk_F7,    "k".utf8CString[0], "7".utf8CString[0]],
+        [vk_F8,    "k".utf8CString[0], "8".utf8CString[0]],
+        [vk_F9,    "k".utf8CString[0], "9".utf8CString[0]],
+        [vk_F10,   "k".utf8CString[0], ";".utf8CString[0]],
+        [vk_F11,   "F".utf8CString[0], "1".utf8CString[0]],
+        [vk_F12,   "F".utf8CString[0], "2".utf8CString[0]],
+        [vk_F13,   "F".utf8CString[0], "3".utf8CString[0]],
+        [vk_F14,   "F".utf8CString[0], "4".utf8CString[0]],
+        [vk_F15,   "F".utf8CString[0], "5".utf8CString[0]],
+        [0,0, 0]
+]
+
+
 
 class VimViewController: UIViewController, UIKeyInput, UITextInputTraits {
     var vimView: VimView?
@@ -56,30 +115,19 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits {
         vimView = VimView(frame: view.frame)
         vimView!.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         self.view.addSubview(vimView!)
-
-        
         registerHotkeys()
-        
         vimView?.addGestureRecognizer(UITapGestureRecognizer(target:self,action:#selector(VimViewController.click(_:))))
         vimView?.addGestureRecognizer(UILongPressGestureRecognizer(target:self,action:#selector(VimViewController.longPress(_:))))
-        
         let scrollRecognizer = UIPanGestureRecognizer(target:self, action:#selector(VimViewController.scroll(_:)))
-        
         vimView?.addGestureRecognizer(scrollRecognizer)
         scrollRecognizer.minimumNumberOfTouches=1
         scrollRecognizer.maximumNumberOfTouches=1
-        
         let mouseRecognizer = UIPanGestureRecognizer(target:self, action:#selector(VimViewController.pan(_:)))
         mouseRecognizer.minimumNumberOfTouches=2
         mouseRecognizer.maximumNumberOfTouches=2
         vimView?.addGestureRecognizer(mouseRecognizer)
-        
         inputAssistantItem.leadingBarButtonGroups=[]
         inputAssistantItem.trailingBarButtonGroups=[]
-        
-    
-        
-        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -170,6 +218,7 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits {
         flush()
         vimView?.setNeedsDisplay((vimView?.dirtyRect)!)
     }
+    
     func deleteBackward() {
             insertText(UnicodeScalar(Int(keyBS))!.description)
         
@@ -236,12 +285,12 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits {
     func registerHotkeys(){
         keyCommandArray = []
         hotkeys.each { letter in
-            [[], [.control], [.command]].map( {
+            [[], [.control], [.command],[.alternate]].map( {
             self.keyCommandArray! += [UIKeyCommand(input:  letter, modifierFlags:$0, action: #selector(VimViewController.keyPressed(_:)))]
             })
         }
         shiftableHotkeys.each{ letter in
-            [[],[.control], [.shift], [.command]].map( {
+            [[],[.control], [.shift], [.command],[.alternate]].map( {
             self.keyCommandArray! += [UIKeyCommand(input:  letter, modifierFlags: $0 , action: #selector(VimViewController.keyPressed(_:)))]
             })
         }
@@ -257,7 +306,8 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits {
         lastKeyPress = Date()
         
         //print("Input \(sender.input), Modifier \(sender.modifierFlags)")
-        var key:String {
+        var vimModifier : UInt8 = 0x00
+        var key:Any {
             switch sender.modifierFlags.rawValue {
             case 0:
                 switch sender.input {
@@ -285,15 +335,42 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits {
 //                    return sender.input.lowercaseString
 //                }
             case UIKeyModifierFlags.shift.rawValue:
+                vimModifier |= MOD_MASK_SHIFT
                 return sender.input
             case UIKeyModifierFlags.control.rawValue:
-                return UnicodeScalar(Int(getCTRLKeyCode(sender.input)))!.description
+                let ret = Int(getCTRLKeyCode(sender.input))
+                if ret == 0
+                {
+                    vimModifier |= MOD_MASK_CTRL
+                    var result : [UInt8] = [CSI,KS_MODIFIER,vimModifier]
+                    result.append(UInt8(sender.input.utf8CString[0]))
+                    return result
+                }
+                else
+                {
+                    let result = UnicodeScalar(ret)!.description
+                    return result
+                }
+            case UIKeyModifierFlags.alternate.rawValue:
+                vimModifier |= MOD_MASK_SHIFT
+                return sender.input
             default: return ""
             }
+       }
+        if let k = key as? String{
+           insertText(k)
         }
-       insertText(key)
+        else if let k = key as? [UInt8]{
+            becomeFirstResponder()
+            add_to_input_buf(k, Int32(k.count))
+            print("called ",k)
+            flush()
+            vimView?.setNeedsDisplay((vimView?.dirtyRect)!)
+        }
        
     }
+    
+
     
     func waitForChars(_ wtime: Int) -> Int {
      //   //print("Wait \(wtime)")
