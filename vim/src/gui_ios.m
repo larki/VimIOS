@@ -1025,18 +1025,39 @@ gui_mch_mousehide(int hide)
     void
 clip_mch_request_selection(VimClipboard *cbd)
 {
+    NSLog(@"request");
 //    printf("%s\n",__func__);  
 }
 
     void
 clip_mch_set_selection(VimClipboard *cbd)
 {
-//    printf("%s\n",__func__);  
+    NSLog(@"set");
+    //printf("%s\n",__func__);  
+    long	scrapSize;
+    int		type;
+    char_u	*str = NULL;
+    if (!cbd->owned)
+        return;
+    clip_get_selection(cbd);
+
+    /*
+     * Once we set the clipboard, lose ownership.  If another application sets
+     * the clipboard, we don't want to think that we still own it.
+     */
+    cbd->owned = FALSE;
+    type = clip_convert_selection(&str, (long_u *)&scrapSize, cbd);
+    if (type >= 0)
+    {
+        [getViewController() handle_select: [NSString stringWithUTF8String:str]];
+    }
+    vim_free(str);
 }
 
    void
 clip_mch_lose_selection(VimClipboard *cbd)
 {
+    NSLog(@"lose");
 //    printf("%s\n",__func__);  
 }
 

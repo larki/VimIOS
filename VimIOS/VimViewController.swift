@@ -28,7 +28,9 @@ let kMenuNoCommandModifier = (1 << 3)
 let MOD_MASK_SHIFT : UInt8 = 0x02
 let MOD_MASK_CTRL : UInt8 = 0x04
 let MOD_MASK_ALT :UInt8 = 0x08
+let MOD_MASK_META :UInt8 = 0x10
 let KS_MODIFIER : UInt8 = 252
+let MOD_MASK_CMD : UInt8 = 0x80
 let CSI : UInt8 = 0x9b	/* Control Sequence Introducer */
 
 let vk_Return   :CChar = 0x28
@@ -84,6 +86,7 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits {
     var vimView: VimView?
     var hasBeenFlushedOnce = false
     var lastKeyPress = Date()
+    var in_ime = false
     
     var blink_wait:CLong = 1000
     var blink_on:CLong = 1000
@@ -95,9 +98,29 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits {
     
     var documentController:UIDocumentInteractionController?
     var activityController:UIActivityViewController?
+    var ime_input = UITextField()
     
     override var keyCommands: [UIKeyCommand]? {
+        if let lang = self.view.window?.textInputMode?.primaryLanguage,
+        lang == "zh-Hans",
+        self.in_ime == true
+        {
+            ime_input.becomeFirstResponder()
+            return []
+        }
         return keyCommandArray
+    }
+    
+    func on_enter_pressed(_ sender:Any){
+        if self.in_ime == true{
+            if let result = ime_input.text
+            {
+                insertText(result)
+            }
+            ime_input.isHidden = true
+            in_ime = false
+            ime_input.text = ""
+        }
     }
    // override var keyCommands:[UIKeyCommand]? { print("Show me the commands!"); return [UIKeyCommand(input:"[", modifierFlags:.Control, action:"keyPressed:")] }
     
@@ -114,6 +137,12 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits {
         print("DidLoad Bounds \(UIScreen.main.bounds)")
         vimView = VimView(frame: view.frame)
         vimView!.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        vimView?.addSubview(ime_input)
+        ime_input.frame = CGRect(x: 100, y: 100, width: 100, height: 15)
+        ime_input.backgroundColor = .black
+        ime_input.textColor = .white
+        ime_input.isHidden = true
+        ime_input.addTarget(self, action: #selector(self.on_enter_pressed(_:)), for: .editingDidEndOnExit)
         self.view.addSubview(vimView!)
         registerHotkeys()
         vimView?.addGestureRecognizer(UITapGestureRecognizer(target:self,action:#selector(VimViewController.click(_:))))
@@ -303,71 +332,84 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits {
     }
     
     func keyPressed(_ sender: UIKeyCommand) {
-        lastKeyPress = Date()
-        
-        //print("Input \(sender.input), Modifier \(sender.modifierFlags)")
-        var vimModifier : UInt8 = 0x00
-        var key:Any {
-            switch sender.modifierFlags.rawValue {
-            case 0:
-                switch sender.input {
-                case UIKeyInputEscape:
-                    return UnicodeScalar(Int(keyESC))!.description
-                case UIKeyInputDownArrow:
-                    do_cmdline_cmd("call feedkeys(\"\\<Down>\")".char)
-                    return ""
-                case UIKeyInputUpArrow:
-                    do_cmdline_cmd("call feedkeys(\"\\<Up>\")".char)
-                    return ""
-                case UIKeyInputLeftArrow:
-                    do_cmdline_cmd("call feedkeys(\"\\<Left>\")".char)
-                    return ""
-                case UIKeyInputRightArrow:
-                    do_cmdline_cmd("call feedkeys(\"\\<Right>\")".char)
-                    return ""
-                default:
+        if let lang = self.view.window?.textInputMode?.primaryLanguage,
+        in_ime == false,
+        lang == "zh-Hans"{
+            in_ime = true
+            ime_input.isHidden = false
+        }
+        else
+        {
+            lastKeyPress = Date()
+            
+            //print("Input \(sender.input), Modifier \(sender.modifierFlags)")
+            var vimModifier : UInt8 = 0x00
+            var key:Any {
+                switch sender.modifierFlags.rawValue {
+                case 0:
+                    switch sender.input {
+                    case UIKeyInputEscape:
+                        return UnicodeScalar(Int(keyESC))!.description
+                    case UIKeyInputDownArrow:
+                        do_cmdline_cmd("call feedkeys(\"\\<Down>\")".char)
+                        return ""
+                    case UIKeyInputUpArrow:
+                        do_cmdline_cmd("call feedkeys(\"\\<Up>\")".char)
+                        return ""
+                    case UIKeyInputLeftArrow:
+                        do_cmdline_cmd("call feedkeys(\"\\<Left>\")".char)
+                        return ""
+                    case UIKeyInputRightArrow:
+                        do_cmdline_cmd("call feedkeys(\"\\<Right>\")".char)
+                        return ""
+                    default:
                         return sender.input.lowercased()
-                }
-//                if(sender.input == UIKeyInputEscape){
-//                    return String(UnicodeScalar(Int(keyESC)))
-//                }
-//                else {
-//                    return sender.input.lowercaseString
-//                }
-            case UIKeyModifierFlags.shift.rawValue:
-                vimModifier |= MOD_MASK_SHIFT
-                return sender.input
-            case UIKeyModifierFlags.control.rawValue:
-                let ret = Int(getCTRLKeyCode(sender.input))
-                if ret == 0
-                {
-                    vimModifier |= MOD_MASK_CTRL
-                    var result : [UInt8] = [CSI,KS_MODIFIER,vimModifier]
-                    result.append(UInt8(sender.input.utf8CString[0]))
+                    }
+                    //                if(sender.input == UIKeyInputEscape){
+                    //                    return String(UnicodeScalar(Int(keyESC)))
+                    //                }
+                    //                else {
+                    //                    return sender.input.lowercaseString
+                //                }
+                case UIKeyModifierFlags.shift.rawValue:
+                    return sender.input
+                case UIKeyModifierFlags.control.rawValue:
+                    let ret = Int(getCTRLKeyCode(sender.input))
+                    if ret == 0
+                    {
+                        vimModifier |= MOD_MASK_CTRL
+                        let result : [UInt8] = [CSI,KS_MODIFIER,vimModifier,UInt8(sender.input.lowercased().utf8CString[0])]
+                        return result
+                    }
+                    else
+                    {
+                        let result = UnicodeScalar(ret)!.description
+                        return result
+                    }
+                case UIKeyModifierFlags.command.rawValue:
+                    
+                    vimModifier |= MOD_MASK_CMD
+                    let result : [UInt8] = [CSI,KS_MODIFIER,vimModifier,UInt8(sender.input.lowercased().utf8CString[0])]
                     return result
-                }
-                else
-                {
-                    let result = UnicodeScalar(ret)!.description
+                case UIKeyModifierFlags.alternate.rawValue:
+                    vimModifier |= MOD_MASK_ALT
+                    let result : [UInt8] = [CSI,KS_MODIFIER,vimModifier,UInt8(sender.input.lowercased().utf8CString[0])]
                     return result
+                default: return ""
                 }
-            case UIKeyModifierFlags.alternate.rawValue:
-                vimModifier |= MOD_MASK_SHIFT
-                return sender.input
-            default: return ""
             }
-       }
-        if let k = key as? String{
-           insertText(k)
+            if let k = key as? String{
+                insertText(k)
+            }
+            else if let k = key as? [UInt8]{
+                becomeFirstResponder()
+                add_to_input_buf(k, Int32(k.count))
+                //print("called ",k)
+                flush()
+                vimView?.setNeedsDisplay((vimView?.dirtyRect)!)
+            }
         }
-        else if let k = key as? [UInt8]{
-            becomeFirstResponder()
-            add_to_input_buf(k, Int32(k.count))
-            print("called ",k)
-            flush()
-            vimView?.setNeedsDisplay((vimView?.dirtyRect)!)
-        }
-       
+        
     }
     
 
@@ -394,6 +436,11 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits {
     
     }
    
+    
+    func handle_select(_ selected_text: String){
+        //print("text is ",selected_text)
+        UIPasteboard.general.setValue(selected_text, forPasteboardType: "public.text")
+    }
     
     func showShareSheetForURL(_ url: URL, mode: String) {
         let height = view.bounds.size.height
@@ -499,6 +546,21 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits {
         }
         
         
+    }
+    
+    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        if action.description == "paste:" {
+            if let k = UIPasteboard.general.string
+            {
+                insertText(k)
+            }
+            return false
+        }
+        else if action.description == "copy:"{
+            return false
+        }
+        print(action.description)
+        return true
     }
     
     

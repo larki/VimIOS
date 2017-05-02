@@ -20,6 +20,7 @@
 #define MACOS_X_UNIX 1
 #define ALWAYS_USE_GUI 1
 #define FEAT_GUI 1
+#define MULTI_BYTE 1
 #define FEAT_GUI_SCROLL_WHEEL_FORCE 1
 #define FEAT_GUI_IOS 1
 #define FEAT_BROWSE
