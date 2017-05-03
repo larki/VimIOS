@@ -82,6 +82,7 @@
 		46BEE8AB1BE090F400DF78C8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 46BEBEED1BE0634800DF78C8 /* Main.storyboard */; };
 		46BEE8AC1BE090F400DF78C8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 46BEBEF21BE0634800DF78C8 /* LaunchScreen.storyboard */; };
 		46D16C9F1BFFCDF1005B5D08 /* VimMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46D16C9E1BFFCDF1005B5D08 /* VimMainView.swift */; };
+		CE32227A1EB731A500D27B31 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE3222791EB731A500D27B31 /* CloudKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -2765,6 +2766,7 @@
 		46BEE8A91BE090B000DF78C8 /* VimAppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VimAppDelegate.swift; sourceTree = "<group>"; };
 		46BEE8F61BE09E8400DF78C8 /* VimIOS copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "VimIOS copy-Info.plist"; path = "/Users/Lars/vimIOS/VimIOS/VimIOS copy-Info.plist"; sourceTree = "<absolute>"; };
 		46D16C9E1BFFCDF1005B5D08 /* VimMainView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VimMainView.swift; sourceTree = "<group>"; };
+		CE3222791EB731A500D27B31 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2772,6 +2774,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE32227A1EB731A500D27B31 /* CloudKit.framework in Frameworks */,
 				468501D31BF6793700BFB8FF /* QuartzCore.framework in Frameworks */,
 				46BEE89E1BE06EDB00DF78C8 /* CoreGraphics.framework in Frameworks */,
 				46BEE89C1BE06ED600DF78C8 /* CoreText.framework in Frameworks */,
@@ -2822,6 +2825,7 @@
 				46BEBF081BE0634800DF78C8 /* VimIOSUITests */,
 				46BEBEE71BE0634800DF78C8 /* Products */,
 				46BEE8F61BE09E8400DF78C8 /* VimIOS copy-Info.plist */,
+				CE3222781EB731A500D27B31 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -6401,6 +6405,14 @@
 			path = xxd;
 			sourceTree = "<group>";
 		};
+		CE3222781EB731A500D27B31 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				CE3222791EB731A500D27B31 /* CloudKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -6469,9 +6481,12 @@
 				TargetAttributes = {
 					46BEBEE51BE0634800DF78C8 = {
 						CreatedOnToolsVersion = 7.1;
-						DevelopmentTeam = WB97F4TN5Z;
+						DevelopmentTeam = 7DR9P3926Q;
 						LastSwiftMigration = 0810;
 						SystemCapabilities = {
+							com.apple.Push = {
+								enabled = 1;
+							};
 							com.apple.iCloud = {
 								enabled = 1;
 							};
@@ -6767,6 +6782,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = VimIOS/VimIOS.entitlements;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 7DR9P3926Q;
 				GCC_PREFIX_HEADER = "${SRCROOT}/VimIOS/ios_prefix.h";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/**";
@@ -6778,7 +6794,7 @@
 					"$(PROJECT_DIR)/vim/src/xpm/x64/lib",
 					"$(PROJECT_DIR)/vim/src/xpm/x86/lib",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = larki.VimIOS;
+				PRODUCT_BUNDLE_IDENTIFIER = gothice.VimIOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_DISABLE_SAFETY_CHECKS = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "VimIOS/VimIOS-Bridging-Header.h";
@@ -6792,7 +6808,8 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-                CODE_SIGN_ENTITLEMENTS = VimIOS/VimIOS.entitlements;
+				CODE_SIGN_ENTITLEMENTS = VimIOS/VimIOS.entitlements;
+				DEVELOPMENT_TEAM = 7DR9P3926Q;
 				GCC_PREFIX_HEADER = "${SRCROOT}/VimIOS/ios_prefix.h";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/**";
@@ -6804,7 +6821,7 @@
 					"$(PROJECT_DIR)/vim/src/xpm/x64/lib",
 					"$(PROJECT_DIR)/vim/src/xpm/x86/lib",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = larki.VimIOS;
+				PRODUCT_BUNDLE_IDENTIFIER = gothice.VimIOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_DISABLE_SAFETY_CHECKS = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "";

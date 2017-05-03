@@ -32,6 +32,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let file = "Inbox/"+url.lastPathComponent
             do_cmdline_cmd("tabedit \(file)".char)
             do_cmdline_cmd("redraw!".char)
+            do_cmdline_cmd("map <d-c> \"*y")
+            do_cmdline_cmd("map <d-v> \"*p")
             return true
         }
         return false
@@ -65,6 +67,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         vimHelper(Int32(numberOfArguments),file)
     }
+    
+    
     
 }
 

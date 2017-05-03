@@ -10,7 +10,7 @@ import UIKit
 import CoreText
 
 struct font{
-    static let name = "Menlo-Regular"
+    static let name = "Menlo"
     static let size =  CGFloat(14)
 }
 
@@ -50,6 +50,7 @@ class VimView: UIView {
             return
         }
         //print("DrawRect \(rect)")
+        
         
         if( !rect.equalTo(CGRect.zero)) {
             let context = UIGraphicsGetCurrentContext()
@@ -135,11 +136,11 @@ class VimView: UIView {
             }
     }
     
-    func drawString(_ s:NSAttributedString,
+    func drawString(_ s:String,
         font: CTFont,
-        pos_x:CGFloat,
-        pos_y: CGFloat,
-        rect:CGRect,
+        col:Int32,
+        row: Int32,
+        cells: Int32,
         p_antialias: Bool,
         transparent: Bool,
         cursor: Bool) {
@@ -151,46 +152,45 @@ class VimView: UIView {
             
             context.setCharacterSpacing(0);
             context.setTextDrawingMode(.fill)
-            
-            
+            let rect = CGRect(x: gui_fill_x(col), y: gui_fill_y(row), width: gui_fill_x(col+cells) - gui_fill_x(col) , height: gui_fill_y(row+1) - gui_fill_y(row))
             if(transparent) {
                 context.setFillColor(bgcolor!)
                 context.fill(rect)
             }
             
-            
             context.setFillColor(fgcolor!);
-//            let attributes : [String:AnyObject] = ([NSFontAttributeName:font, (kCTForegroundColorFromContextAttributeName as String):true])
-//            
-//            let attributesNeu = NSDictionary(dictionaryLiteral: (NSFontAttributeName, font) (kCTForegroundColorFromContextAttributeName, true))
-//            
-//            let attString = NSAttributedString(string: s as String, attributes: attributes)
-            
-            
-            let line = CTLineCreateWithAttributedString(s)
-            context.textPosition = CGPoint(x: pos_x, y: pos_y)
-            CTLineDraw(line, context)
-            
+            let attributes : [String:AnyObject] = ([NSFontAttributeName:font, (kCTForegroundColorFromContextAttributeName as String):true as AnyObject])
+            var index = 0
+            for i in s.characters.indices[s.startIndex..<s.endIndex]
+            {
+                let t = String(s[i])
+                let attString = NSAttributedString(string: t, attributes: attributes)
+                let line = CTLineCreateWithAttributedString(attString)
+                context.textPosition = CGPoint(x: gui_text_x(col+index), y: gui_text_y(row))
+                CTLineDraw(line, context)
+                index += (t.lengthOfBytes(using: .utf8) == 1 ? 1 : 2)
+            }
+//
+
+            //
             if(cursor) {
                 context.saveGState();
                 context.setBlendMode(.difference)
                 context.fill(rect)
                 context.restoreGState()
             }
-            
-            
-            
-            
+            //print(s)
             dirtyRect = dirtyRect.union(rect);
-          //  print("Draw String \(s) at \(pos_x), \(pos_y) and \(dirtyRect)")
+            //print("Draw String \(s) at \(pos_x), \(pos_y) and \(dirtyRect)")
             
     }
     
     func initFont() -> CTFont {
         let rawFont = CTFontCreateWithName(font.name as CFString, font.size, nil)
+        print(rawFont)
         
         var boundingRect = CGRect.zero;
-        var glyph = CTFontGetGlyphWithName(rawFont, "0" as CFString)
+        var glyph = CTFontGetGlyphWithName(rawFont, "w" as CFString)
        
         let glyphPointer = withUnsafePointer(to: &glyph) {(pointer: UnsafePointer<CGGlyph>) -> UnsafePointer<CGGlyph> in return pointer}
         
@@ -201,7 +201,7 @@ class VimView: UIView {
         
         char_ascent = CTFontGetAscent(rawFont)
         char_width = boundingRect.width
-        char_height = boundingRect.height+3
+        char_height = boundingRect.height * 2
 
 
         var advances = CGSize.zero

@@ -263,6 +263,7 @@ gui_mch_update(void)
     // As a compromise we check for new input only every now and then. Note
     // that Cmd-. sends SIGINT so it has higher success rate at interrupting
     // Vim than Ctrl-C.
+    //    EventRecord theEvent;
 
 //    printf("%s\n",__func__);  
 }
@@ -366,6 +367,23 @@ gui_mch_clear_block(int row1, int col1, int row2, int col2)
    // gui_ios.dirtyRect = CGRectUnion(gui_ios.dirtyRect, rect);
 }
 
+CGFloat gui_fill_x(int col){
+    return FILL_X(col);
+}
+
+CGFloat gui_fill_y(int col){
+    return FILL_Y(col);
+}
+
+CGFloat gui_text_x(int col){
+    return TEXT_X(col);
+}
+
+CGFloat gui_text_y(int row){
+    return TEXT_Y(row);
+}
+
+
 
 void gui_mch_draw_string(int row, int col, char_u *s, int len, int flags) {
     if (s == NULL || len <= 0) {
@@ -373,21 +391,25 @@ void gui_mch_draw_string(int row, int col, char_u *s, int len, int flags) {
     }
 
     //NSLog(@"Draw %s ", s);
-    CGRect rect = CGRectMake(FILL_X(col),
-                             FILL_Y(row),
-                             FILL_X(col+len)-FILL_X(col),
-                             FILL_Y(row+1)-FILL_Y(row));
+    //CGRect rect = CGRectMake(FILL_X(col),
+    //                         FILL_Y(row),
+    //                        #ifdef FEAT_MBYTE
+    //                        FILL_X(col+mb_string2cells(s,len))-FILL_X(col),
+    //                        #else
+    //                        FILL_X(col+len)-FILL_X(col),
+    //                        #endif
+    //                         FILL_Y(row+1)-FILL_Y(row));
     
     NSString * string = [[NSString alloc] initWithBytes:s length:len encoding:NSUTF8StringEncoding];
     if (string == nil) {
         return;
     }
-    NSDictionary * attributes = [[NSDictionary alloc] initWithObjectsAndKeys:(__bridge id)(gui.norm_font), (NSString *)kCTFontAttributeName,
-                                 [NSNumber numberWithBool:YES], kCTForegroundColorFromContextAttributeName,
-                                 nil];
-    NSAttributedString * attributedString = [[NSAttributedString alloc] initWithString:string attributes:attributes];
+    //NSDictionary * attributes = [[NSDictionary alloc] initWithObjectsAndKeys:(__bridge id)(gui.norm_font), (NSString *)kCTFontAttributeName,
+    //                             [NSNumber numberWithBool:YES], kCTForegroundColorFromContextAttributeName,
+    //                             nil];
+    //NSAttributedString * attributedString = [[NSAttributedString alloc] initWithString:string attributes:attributes];
     
-    [getView() drawString:attributedString font:gui.norm_font pos_x:TEXT_X(col) pos_y: TEXT_Y(row)  rect:rect p_antialias:true transparent: !(flags & DRAW_TRANSP) cursor: (flags & DRAW_CURSOR)];
+    [getView() drawString:string font:gui.norm_font col:col row: row cells: mb_string2cells(s,len) p_antialias:true transparent: !(flags & DRAW_TRANSP) cursor: (flags & DRAW_CURSOR)];
 
     //CGContextRef context = CGLayerGetContext(gui_ios.layer);
 
@@ -1025,18 +1047,50 @@ gui_mch_mousehide(int hide)
     void
 clip_mch_request_selection(VimClipboard *cbd)
 {
+	int type = MAUTO;
+    NSString *string = [getViewController() get_pasteboard_text: nil];
+    if(string){
+        char_u *str = (char_u*)[string UTF8String];
+        int len = [string lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+        if (str)
+        {
+            clip_yank_selection(type, str, len, cbd);
+        }
+    }
 //    printf("%s\n",__func__);  
 }
 
     void
 clip_mch_set_selection(VimClipboard *cbd)
 {
-//    printf("%s\n",__func__);  
+
+    NSLog(@"set");
+    NSLog(@"%d",State);
+    //printf("%s\n",__func__);  
+    long	scrapSize;
+    int		type;
+    char_u	*str = NULL;
+    if (!cbd->owned)
+        return;
+    clip_get_selection(cbd);
+
+    /*
+     * Once we set the clipboard, lose ownership.  If another application sets
+     * the clipboard, we don't want to think that we still own it.
+     */
+    cbd->owned = FALSE;
+    type = clip_convert_selection(&str, (long_u *)&scrapSize, cbd);
+    if (type >= 0)
+    {
+        [getViewController() handle_select: [NSString stringWithUTF8String:str]];
+    }
+    vim_free(str);
 }
 
    void
 clip_mch_lose_selection(VimClipboard *cbd)
 {
+    NSLog(@"lose");
 //    printf("%s\n",__func__);  
 }
 
@@ -1568,3 +1622,4 @@ gui_mch_post_balloon(beval, mesg)
 }
 
 #endif // FEAT_BEVAL
+
