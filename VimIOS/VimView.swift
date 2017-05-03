@@ -10,8 +10,8 @@ import UIKit
 import CoreText
 
 struct font{
-    static let name = "Monaco"
-    static let size =  CGFloat(12)
+    static let name = "Menlo"
+    static let size =  CGFloat(14)
 }
 
 struct FontProperties{
@@ -182,7 +182,7 @@ class VimView: UIView {
             
             
             dirtyRect = dirtyRect.union(rect);
-          //  print("Draw String \(s) at \(pos_x), \(pos_y) and \(dirtyRect)")
+            //print("Draw String \(s) at \(pos_x), \(pos_y) and \(dirtyRect)")
             
     }
     
@@ -191,7 +191,7 @@ class VimView: UIView {
         print(rawFont)
         
         var boundingRect = CGRect.zero;
-        var glyph = CTFontGetGlyphWithName(rawFont, "0" as CFString)
+        var glyph = CTFontGetGlyphWithName(rawFont, "w" as CFString)
        
         let glyphPointer = withUnsafePointer(to: &glyph) {(pointer: UnsafePointer<CGGlyph>) -> UnsafePointer<CGGlyph> in return pointer}
         
@@ -202,7 +202,8 @@ class VimView: UIView {
         
         char_ascent = CTFontGetAscent(rawFont)
         char_width = boundingRect.width
-        char_height = boundingRect.height+3
+        print("char width is ",char_width)
+        char_height = boundingRect.height * 2
 
 
         var advances = CGSize.zero

@@ -375,7 +375,11 @@ void gui_mch_draw_string(int row, int col, char_u *s, int len, int flags) {
     //NSLog(@"Draw %s ", s);
     CGRect rect = CGRectMake(FILL_X(col),
                              FILL_Y(row),
-                             FILL_X(col+len)-FILL_X(col),
+                            #ifdef FEAT_MBYTE
+                            FILL_X(col+mb_string2cells(s,len))-FILL_X(col),
+                            #else
+                            FILL_X(col+len)-FILL_X(col),
+                            #endif
                              FILL_Y(row+1)-FILL_Y(row));
     
     NSString * string = [[NSString alloc] initWithBytes:s length:len encoding:NSUTF8StringEncoding];
