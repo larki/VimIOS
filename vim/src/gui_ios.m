@@ -1029,7 +1029,16 @@ gui_mch_mousehide(int hide)
     void
 clip_mch_request_selection(VimClipboard *cbd)
 {
-    NSLog(@"request");
+	int type = MAUTO;
+    NSString *string = [getViewController() get_pasteboard_text: nil];
+    if(string){
+        char_u *str = (char_u*)[string UTF8String];
+        int len = [string lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+        if (str)
+        {
+            clip_yank_selection(type, str, len, cbd);
+        }
+    }
 //    printf("%s\n",__func__);  
 }
 
@@ -1595,3 +1604,4 @@ gui_mch_post_balloon(beval, mesg)
 }
 
 #endif // FEAT_BEVAL
+

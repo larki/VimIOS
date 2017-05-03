@@ -51,6 +51,7 @@ class VimView: UIView {
         }
         //print("DrawRect \(rect)")
         
+        
         if( !rect.equalTo(CGRect.zero)) {
             let context = UIGraphicsGetCurrentContext()
             context!.saveGState()
@@ -202,7 +203,6 @@ class VimView: UIView {
         
         char_ascent = CTFontGetAscent(rawFont)
         char_width = boundingRect.width
-        print("char width is ",char_width)
         char_height = boundingRect.height * 2
 
 
