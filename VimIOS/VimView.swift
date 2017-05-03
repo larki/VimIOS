@@ -10,8 +10,8 @@ import UIKit
 import CoreText
 
 struct font{
-    static let name = "Menlo-Regular"
-    static let size =  CGFloat(14)
+    static let name = "Monaco"
+    static let size =  CGFloat(12)
 }
 
 struct FontProperties{
@@ -188,6 +188,7 @@ class VimView: UIView {
     
     func initFont() -> CTFont {
         let rawFont = CTFontCreateWithName(font.name as CFString, font.size, nil)
+        print(rawFont)
         
         var boundingRect = CGRect.zero;
         var glyph = CTFontGetGlyphWithName(rawFont, "0" as CFString)

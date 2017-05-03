@@ -80,6 +80,9 @@ let special_keys: [[CChar]] = [
         [0,0, 0]
 ]
 
+let a_char = "a".utf8CString[0]
+let z_char = "z".utf8CString[0]
+
 
 
 class VimViewController: UIViewController, UIKeyInput, UITextInputTraits {
@@ -103,9 +106,9 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits {
     override var keyCommands: [UIKeyCommand]? {
         if let lang = self.view.window?.textInputMode?.primaryLanguage,
         lang == "zh-Hans",
+        State == 16,
         self.in_ime == true
         {
-            ime_input.becomeFirstResponder()
             return []
         }
         return keyCommandArray
@@ -115,11 +118,12 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits {
         if self.in_ime == true{
             if let result = ime_input.text
             {
+                ime_input.text = ""
                 insertText(result)
+                ime_input.isHidden = true
+                in_ime = false
             }
-            ime_input.isHidden = true
-            in_ime = false
-            ime_input.text = ""
+            
         }
     }
    // override var keyCommands:[UIKeyCommand]? { print("Show me the commands!"); return [UIKeyCommand(input:"[", modifierFlags:.Control, action:"keyPressed:")] }
@@ -138,7 +142,7 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits {
         vimView = VimView(frame: view.frame)
         vimView!.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         vimView?.addSubview(ime_input)
-        ime_input.frame = CGRect(x: 100, y: 100, width: 100, height: 15)
+        ime_input.frame = CGRect(x: 100, y: 100, width: 500, height: 15)
         ime_input.backgroundColor = .black
         ime_input.textColor = .white
         ime_input.isHidden = true
@@ -332,11 +336,15 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits {
     }
     
     func keyPressed(_ sender: UIKeyCommand) {
+        let value = sender.input.lowercased().utf8CString[0]
         if let lang = self.view.window?.textInputMode?.primaryLanguage,
+        value >= a_char && value <= z_char,
         in_ime == false,
+        State == 16,
         lang == "zh-Hans"{
             in_ime = true
             ime_input.isHidden = false
+            ime_input.becomeFirstResponder()
         }
         else
         {

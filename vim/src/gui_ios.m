@@ -1032,7 +1032,9 @@ clip_mch_request_selection(VimClipboard *cbd)
     void
 clip_mch_set_selection(VimClipboard *cbd)
 {
+
     NSLog(@"set");
+    NSLog(@"%d",State);
     //printf("%s\n",__func__);  
     long	scrapSize;
     int		type;
