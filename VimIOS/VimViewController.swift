@@ -17,7 +17,7 @@ enum blink_state {
 
 
 //let hotkeys = "1234567890[]{}()!@#$%^&*/.,;"
-let hotkeys = "1234567890!@#$%^&*()_={}\\/.,<>?:|`~[]"
+let hotkeys = "1234567890!@#$%^&*()_={}\\/.,<>?:|`~[]'\""
 let shiftableHotkeys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 let kMenuCommandModifiers = 0
@@ -291,6 +291,13 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits{
         return false
     }
     
+    func insertText(data: [UInt8]) {
+        becomeFirstResponder()
+        add_to_input_buf(data, Int32(data.count))
+        flush()
+        vimView?.setNeedsDisplay((vimView?.dirtyRect)!)
+    }
+    
     func insertText(_ text: String) {
         var escapeString = text.char
         if(text=="\n") {
@@ -307,7 +314,7 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits{
     }
     
     func deleteBackward() {
-            insertText(UnicodeScalar(Int(keyBS))!.description)
+        insertText(UnicodeScalar(Int(keyBS))!.description)
         
     }
     
@@ -365,9 +372,9 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits{
     func handleBarButton(_ sender: UIBarButtonItem) {
         switch sender.title! {
         case "ESC":
-            insertText(UnicodeScalar(Int(keyESC))!.description)
+            insertText( UnicodeScalar(Int(keyESC))!.description)
         case "TAB":
-            insertText(UnicodeScalar(Int(keyTAB))!.description)
+            insertText( UnicodeScalar(Int(keyTAB))!.description)
         case "Enter":
             if self.in_ime == true{
                 self.ime_on_enter_pressed(self)
@@ -476,14 +483,10 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits{
             }
         }
         if let k = key as? String{
-            insertText(k)
+            insertText( k)
         }
         else if let k = key as? [UInt8]{
-            becomeFirstResponder()
-            add_to_input_buf(k, Int32(k.count))
-            //print("called ",k)
-            flush()
-            vimView?.setNeedsDisplay((vimView?.dirtyRect)!)
+            insertText(data: k)
         }
         
     }
@@ -491,25 +494,12 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits{
 
     
     func waitForChars(_ wtime: Int) -> Int {
-     //   //print("Wait \(wtime)")
-        let passed = Date().timeIntervalSince(lastKeyPress)*1000
-        var wait = wtime
-        //print("Passed \(passed)")
-        
-        if(passed < 1000) {
-            wait = 10
-        } else if(wtime < 0 ){
-            wait = 4000
-        }
-        
-     
-     //print("Wait2 \(wait)")
-     
-     let expirationDate = Date(timeIntervalSinceNow: Double(wait)/1000.0)
-        RunLoop.current.acceptInput(forMode: RunLoopMode.defaultRunLoopMode, before: expirationDate)
+     let expirationDate = Date(timeIntervalSinceNow: Double(wtime)/1000.0)
+     RunLoop.current.acceptInput(forMode: RunLoopMode.defaultRunLoopMode, before: expirationDate)
+     RunLoop.current.run(until: Date.init(timeIntervalSinceNow: 0.01))
      let delay = expirationDate.timeIntervalSinceNow
-     return delay < 0 ? 0 : 1
-    
+     let result = delay < 0 ? 0 : 1
+     return result
     }
    
     
@@ -616,7 +606,7 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits{
             diffY += 1
         }
         while(diffY >= 1) {
-            insertText(UnicodeScalar(Int(getCTRLKeyCode("Y")))!.description)
+            insertText( UnicodeScalar(Int(getCTRLKeyCode("Y")))!.description)
             //gui_send_mouse_event(MOUSE_4, Int32(clickLocation.x), Int32(clickLocation.y), 0, 0);
             diffY -= 1
             
