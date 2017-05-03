@@ -366,6 +366,23 @@ gui_mch_clear_block(int row1, int col1, int row2, int col2)
    // gui_ios.dirtyRect = CGRectUnion(gui_ios.dirtyRect, rect);
 }
 
+CGFloat gui_fill_x(int col){
+    return FILL_X(col);
+}
+
+CGFloat gui_fill_y(int col){
+    return FILL_Y(col);
+}
+
+CGFloat gui_text_x(int col){
+    return TEXT_X(col);
+}
+
+CGFloat gui_text_y(int row){
+    return TEXT_Y(row);
+}
+
+
 
 void gui_mch_draw_string(int row, int col, char_u *s, int len, int flags) {
     if (s == NULL || len <= 0) {
@@ -373,25 +390,25 @@ void gui_mch_draw_string(int row, int col, char_u *s, int len, int flags) {
     }
 
     //NSLog(@"Draw %s ", s);
-    CGRect rect = CGRectMake(FILL_X(col),
-                             FILL_Y(row),
-                            #ifdef FEAT_MBYTE
-                            FILL_X(col+mb_string2cells(s,len))-FILL_X(col),
-                            #else
-                            FILL_X(col+len)-FILL_X(col),
-                            #endif
-                             FILL_Y(row+1)-FILL_Y(row));
+    //CGRect rect = CGRectMake(FILL_X(col),
+    //                         FILL_Y(row),
+    //                        #ifdef FEAT_MBYTE
+    //                        FILL_X(col+mb_string2cells(s,len))-FILL_X(col),
+    //                        #else
+    //                        FILL_X(col+len)-FILL_X(col),
+    //                        #endif
+    //                         FILL_Y(row+1)-FILL_Y(row));
     
     NSString * string = [[NSString alloc] initWithBytes:s length:len encoding:NSUTF8StringEncoding];
     if (string == nil) {
         return;
     }
-    NSDictionary * attributes = [[NSDictionary alloc] initWithObjectsAndKeys:(__bridge id)(gui.norm_font), (NSString *)kCTFontAttributeName,
-                                 [NSNumber numberWithBool:YES], kCTForegroundColorFromContextAttributeName,
-                                 nil];
-    NSAttributedString * attributedString = [[NSAttributedString alloc] initWithString:string attributes:attributes];
+    //NSDictionary * attributes = [[NSDictionary alloc] initWithObjectsAndKeys:(__bridge id)(gui.norm_font), (NSString *)kCTFontAttributeName,
+    //                             [NSNumber numberWithBool:YES], kCTForegroundColorFromContextAttributeName,
+    //                             nil];
+    //NSAttributedString * attributedString = [[NSAttributedString alloc] initWithString:string attributes:attributes];
     
-    [getView() drawString:attributedString font:gui.norm_font pos_x:TEXT_X(col) pos_y: TEXT_Y(row)  rect:rect p_antialias:true transparent: !(flags & DRAW_TRANSP) cursor: (flags & DRAW_CURSOR)];
+    [getView() drawString:string font:gui.norm_font col:col row: row cells: mb_string2cells(s,len) p_antialias:true transparent: !(flags & DRAW_TRANSP) cursor: (flags & DRAW_CURSOR)];
 
     //CGContextRef context = CGLayerGetContext(gui_ios.layer);
 

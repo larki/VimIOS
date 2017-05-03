@@ -39,6 +39,10 @@ void gui_send_mouse_event(int button,int x,int y, int repeated_click, unsigned i
 int vim_setenv(const unsigned char *name, const unsigned char *value);
 int do_cmdline_cmd(const unsigned char *cmd);
 int State;
+CGFloat gui_fill_x(int col);
+CGFloat gui_fill_y(int row);
+CGFloat gui_text_x(int row);
+CGFloat gui_text_y(int row);
 
 void add_to_input_buf(const unsigned char  *s, int len);
 int getCTRLKeyCode(NSString * s);
