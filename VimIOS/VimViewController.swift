@@ -116,10 +116,10 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits{
         return self.keyCommandArray!
     }
     
-    func ime_on_change(_ sender:UITextField){
-        let newPosition = sender.endOfDocument
-        sender.selectedTextRange = sender.textRange(from: newPosition, to: newPosition)
-    }
+    //func ime_on_change(_ sender:UITextField){
+    //    let newPosition = sender.endOfDocument
+    //    sender.selectedTextRange = sender.textRange(from: newPosition, to: newPosition)
+    //}
     
     
     func exit_ime_and_esc(_ sender:Any){
@@ -133,6 +133,9 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits{
     }
     
     func start_ime(_ sender:Any){
+        let y_start = vimView!.frame.height - 20
+        let x_start = vimView!.frame.width - 300
+        ime_input.frame = CGRect(x: x_start, y: y_start, width: 300, height: 15)
         ime_input.isHidden = false
         ime_input.becomeFirstResponder()
         in_ime = true
@@ -196,7 +199,7 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits{
         ime_input.backgroundColor = .black
         ime_input.textColor = .white
         ime_input.isHidden = true
-        ime_input.addTarget(self, action: #selector(self.ime_on_change(_:)), for: .editingChanged)
+        //ime_input.addTarget(self, action: #selector(self.ime_on_change(_:)), for: .editingChanged)
         self.view.addSubview(vimView!)
         registerHotkeys()
         vimView?.addGestureRecognizer(UITapGestureRecognizer(target:self,action:#selector(VimViewController.click(_:))))
@@ -211,6 +214,7 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits{
         vimView?.addGestureRecognizer(mouseRecognizer)
         inputAssistantItem.leadingBarButtonGroups=[]
         inputAssistantItem.trailingBarButtonGroups=[]
+        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -319,7 +323,12 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits{
             let escButton = UIBarButtonItem(title: "ESC", style: .plain, target: self, action: #selector(VimViewController.handleBarButton(_:)))
             let tabButton = UIBarButtonItem(title: "TAB", style: .plain, target: self, action: #selector(VimViewController.handleBarButton(_:)))
             let f1Button = UIBarButtonItem(title: "F1", style: .plain, target: self, action: #selector(VimViewController.handleBarButton(_:)))
+            let enter = UIBarButtonItem(title: "Enter", style: .plain, target: self, action: #selector(VimViewController.handleBarButton(_:)))
+            let IME = UIBarButtonItem(title: "IME", style: .plain, target: self, action: #selector(VimViewController.handleBarButton(_:)))
+            let copy = UIBarButtonItem(title: "copy", style: .plain, target: self, action: #selector(VimViewController.handleBarButton(_:)))
+            let paste = UIBarButtonItem(title: "paste", style: .plain, target: self, action: #selector(VimViewController.handleBarButton(_:)))
             inputAssistantItem.leadingBarButtonGroups += [UIBarButtonItemGroup(barButtonItems: [escButton, tabButton, f1Button], representativeItem: nil)]
+            inputAssistantItem.trailingBarButtonGroups += [UIBarButtonItemGroup(barButtonItems: [IME,enter, copy, paste], representativeItem: nil)]
         }
         else {
             inputAssistantItem.leadingBarButtonGroups=[]
@@ -341,6 +350,7 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits{
         vView.frame = CGRect(x: vView.frame.origin.x, y: vView.frame.origin.y, width: vView.frame.size.width, height: keyboardRectInViewCoordinates.origin.y)
         print("Did show!")
         
+        
     
     }
     
@@ -358,8 +368,25 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits{
             insertText(UnicodeScalar(Int(keyESC))!.description)
         case "TAB":
             insertText(UnicodeScalar(Int(keyTAB))!.description)
+        case "Enter":
+            if self.in_ime == true{
+                self.ime_on_enter_pressed(self)
+            }
         case "F1":
             do_cmdline_cmd("call feedkeys(\"\\<F1>\")".char)
+        case "IME":
+            if self.in_ime == false
+            {
+                start_ime(self)
+            }
+            else
+            {
+                exit_ime(self)
+            }
+        case "copy":
+            do_copy()
+        case "paste":
+            do_paste()
         default: break
         }
     }
@@ -487,7 +514,7 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits{
    
     
     func handle_select(_ selected_text: String){
-        print("text is ",selected_text)
+        //print("text is ",selected_text)
         UIPasteboard.general.setValue(selected_text, forPasteboardType: "public.text")
     }
     
@@ -606,19 +633,37 @@ class VimViewController: UIViewController, UIKeyInput, UITextInputTraits{
         return nil
     }
     
+    func do_copy(){
+        var vimModifier : UInt8 = 0x00
+        vimModifier |= MOD_MASK_CMD
+        let result : [UInt8] = [CSI,KS_MODIFIER,vimModifier,UInt8("c".utf8CString[0])]
+        becomeFirstResponder()
+        add_to_input_buf(result, Int32(result.count))
+        flush()
+        vimView?.setNeedsDisplay((vimView?.dirtyRect)!)
+        // you will have to set
+        //map <d-c> "*y
+        //map <d-v> "*p
+        //in .vimrc
+    }
+    
+    func do_paste(){
+        var vimModifier : UInt8 = 0x00
+        vimModifier |= MOD_MASK_CMD
+        let result : [UInt8] = [CSI,KS_MODIFIER,vimModifier,UInt8("v".utf8CString[0])]
+        becomeFirstResponder()
+        add_to_input_buf(result, Int32(result.count))
+        flush()
+        vimView?.setNeedsDisplay((vimView?.dirtyRect)!)
+    }
     
     override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
         if action.description == "paste:" {
-            var vimModifier : UInt8 = 0x00
-            vimModifier |= MOD_MASK_CMD
-            let result : [UInt8] = [CSI,KS_MODIFIER,vimModifier,UInt8("v".utf8CString[0])]
-            becomeFirstResponder()
-            add_to_input_buf(result, Int32(result.count))
-            flush()
-            vimView?.setNeedsDisplay((vimView?.dirtyRect)!)
+            do_paste()
             return false
         }
         else if action.description == "copy:"{
+            do_copy()
             return false
         }
         return true
